@@ -25,6 +25,7 @@ const App: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
+
       })
       .then((response) => {
         setMessages(response.data.map((msg: any) => msg.content));
@@ -32,41 +33,24 @@ const App: React.FC = () => {
       .catch((error) => {
         console.error("Error fetching messages:", error);
       });
+
+      console.log(messages)
   }, []);
 
   const sendMessage = () => {
     if (input.trim()) {
-      const newMessage = input;
+      axios.post("http://localhost:3001/api/messages", {
+        message: input,
+        sender_id: 1,
+        receiver_id: 2,
+      });
       setInput("");
-
-      // Adicionar a nova mensagem imediatamente à lista local
-      setMessages((prev) => [...prev, newMessage]);
-
-      axios
-        .post("http://localhost:3001/api/messages", {
-          message: newMessage,
-          sender_id: 1,
-          receiver_id: 2,
-        })
-        .then((response) => {
-          console.log('Message sent successfully:', response.data);
-        })
-        .catch((error) => {
-          console.error("Error sending message:", error);
-        });
     }
   };
 
-  useEffect(() => {
-    // Rolagem automática para a última mensagem
-    if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   return (
     <div>
-      <div ref={messageContainerRef} style={{ height: '300px', overflowY: 'scroll' }}>
+      <div ref={messageContainerRef}>
         {messages.map((msg, index) => (
           <div key={index}>{msg}</div>
         ))}
