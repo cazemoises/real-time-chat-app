@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./app/frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - bff
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  bff:
+    build: ./app/bff
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    depends_on:
+      - mq
+      - api_storage
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  mq:
+    build: ./app/mq
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  api_storage:
+    build: ./app/api_storage
+    ports:
+      - "8082:8082"
+    depends_on:
+      - db
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./app/db-init:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+volumes:
+  postgres_data:
+networks:
+  app-network:
